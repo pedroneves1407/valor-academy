@@ -243,9 +243,27 @@ conectado (ver pendência da Etapa 1).
 - Build, lint e typecheck limpos; verificado no navegador que `/painel/avaliacoes`
   redireciona para `/login` sem sessão, sem erro de servidor.
 
-### Etapa 5 — Certificados ⏳ PENDENTE
-Emissão em PDF (pdfkit), QR Code, validação pública (estrutura de página já criada
-na Etapa 1, lógica de emissão pendente).
+### Etapa 5 — Certificados ✅ CONCLUÍDA
+- Emissão automática (`src/lib/certificates/issue.ts`, `issueCertificateIfEligible`):
+  chamada no servidor sempre que progresso de curso muda (conclusão de aula) ou uma
+  tentativa de avaliação é aprovada (automática ou por correção manual). Só emite se
+  progresso = 100%, todas as avaliações do curso aprovadas (quando existirem),
+  `certificate_enabled` do curso e ainda não existir certificado para aquele
+  colaborador+curso — nunca confia em uma chamada vinda do cliente.
+- Código de validação único (`VA-<ano>-<hash>`).
+- Geração de PDF sob demanda (`src/app/api/certificados/[id]/pdf/route.ts`, pdfkit):
+  nome do colaborador, curso, carga horária, data de emissão (`dd/MM/yyyy`), nome da
+  empresa, QR Code (gerado com `qrcode`) apontando para a validação pública, código
+  de validação, linha de assinatura do responsável. Acesso restrito ao próprio
+  colaborador ou a administradores da mesma empresa.
+- Página pública de validação (`/certificados/validar`, criada na Etapa 1) consome o
+  mesmo `validation_code`; verificado no navegador que um código inexistente exibe
+  "Certificado não encontrado ou inválido" sem expor dados de outros certificados.
+- Lista de certificados (`src/app/painel/certificados`): colaborador vê os próprios;
+  administrador vê todos os certificados da empresa, com download do PDF e link para
+  a validação pública.
+- Build, lint e typecheck limpos; verificado no navegador (rota protegida redireciona
+  sem sessão; validação pública responde corretamente sem autenticação).
 
 ### Etapa 6 — Gestão de pessoas ⏳ PENDENTE
 Metas, PDI, feedback, acompanhamento.

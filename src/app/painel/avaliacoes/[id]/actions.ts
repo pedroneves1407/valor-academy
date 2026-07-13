@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertOrgPermission } from "@/lib/auth/require-company-admin";
 import { questionSchema, type QuestionInput } from "@/lib/validations/assessments";
+import { issueCertificateIfEligible } from "@/lib/certificates/issue";
 
 export async function createQuestion(assessmentId: string, formData: QuestionInput) {
   await assertOrgPermission("assessment:manage");
@@ -126,6 +127,18 @@ export async function gradeEssayAnswer(
       .from("assessment_attempts")
       .update({ status: "graded", score, passed })
       .eq("id", attemptId);
+
+    if (passed) {
+      const { data: attemptData } = await supabase
+        .from("assessment_attempts")
+        .select("profile_id, assessments(course_id)")
+        .eq("id", attemptId)
+        .single();
+      const attempt = attemptData as unknown as { profile_id: string; assessments: { course_id: string } | null } | null;
+      if (attempt?.assessments?.course_id) {
+        await issueCertificateIfEligible(attempt.profile_id, attempt.assessments.course_id);
+      }
+    }
   }
 
   revalidatePath(`/painel/avaliacoes/${assessmentId}`);

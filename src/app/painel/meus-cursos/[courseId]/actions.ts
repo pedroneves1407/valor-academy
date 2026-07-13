@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireProfile } from "@/lib/auth/current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { computeLessonAvailability, type SequenceModule } from "@/lib/courses/sequence";
+import { issueCertificateIfEligible } from "@/lib/certificates/issue";
 
 async function loadSequenceState(supabase: Awaited<ReturnType<typeof createClient>>, profileId: string, courseId: string) {
   const { data: modules } = await supabase
@@ -169,4 +170,8 @@ async function recalculateCourseProgress(profileId: string, courseId: string, en
     .from("enrollments")
     .update({ status: isComplete ? "completed" : "in_progress", completed_at: isComplete ? new Date().toISOString() : null })
     .eq("id", enrollmentId);
+
+  if (isComplete) {
+    await issueCertificateIfEligible(profileId, courseId);
+  }
 }

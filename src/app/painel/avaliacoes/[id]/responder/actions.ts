@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth/current-profile";
 import { createClient } from "@/lib/supabase/server";
 import type { SequenceModule } from "@/lib/courses/sequence";
+import { issueCertificateIfEligible } from "@/lib/certificates/issue";
 
 async function loadAssessment(assessmentId: string) {
   const supabase = await createClient();
@@ -144,11 +145,12 @@ export async function submitAttempt(assessmentId: string, attemptId: string, ans
 
   const { data: assessment } = await supabase
     .from("assessments")
-    .select("passing_score")
+    .select("passing_score, course_id")
     .eq("id", assessmentId)
     .single();
 
   const score = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0;
+  const passed = hasPending ? null : score >= (assessment?.passing_score ?? 70);
 
   await supabase
     .from("assessment_attempts")
@@ -156,9 +158,13 @@ export async function submitAttempt(assessmentId: string, attemptId: string, ans
       submitted_at: new Date().toISOString(),
       status: hasPending ? "grading_pending" : "graded",
       score: hasPending ? null : score,
-      passed: hasPending ? null : score >= (assessment?.passing_score ?? 70),
+      passed,
     })
     .eq("id", attemptId);
+
+  if (passed && assessment?.course_id) {
+    await issueCertificateIfEligible(profile.id, assessment.course_id);
+  }
 
   revalidatePath(`/painel/avaliacoes/${assessmentId}`);
   redirect(`/painel/avaliacoes/${assessmentId}/resultado/${attemptId}`);
