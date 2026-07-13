@@ -162,9 +162,55 @@ autocomplete/checagem de campos reais. Deve ser substituído por
 `npx supabase gen types typescript` assim que houver um projeto Supabase real
 conectado (ver pendência da Etapa 1).
 
-### Etapa 3 — Cursos ⏳ PENDENTE
-Cursos, módulos, aulas, upload de materiais, atribuições, player, progresso,
-sequência obrigatória validada no servidor, progresso de vídeo.
+### Etapa 3 — Cursos ✅ CONCLUÍDA
+- CRUD de cursos (`src/app/painel/cursos`): criação rápida (título + nível) seguida
+  de edição completa (descrições, instrutor, carga horária, nível, prazo, nota
+  mínima, tentativas máximas, certificado habilitado, obrigatoriedade, público-alvo,
+  tags), publicar/despublicar/arquivar/duplicar (com módulos e aulas)/remover
+  (exclusão lógica). Visualização em cards e em tabela, com busca e filtro de status.
+- Módulos e aulas (`src/app/painel/cursos/[id]`): CRUD completo, 8 tipos de aula
+  (vídeo, texto, PDF, arquivo, link externo, atividade, questionário rápido, aula ao
+  vivo), reordenação por botões subir/descer (drag-and-drop avaliado e descartado
+  para o MVP — ver nota abaixo), duração, obrigatoriedade e percentual mínimo
+  assistido configuráveis por aula.
+- Atribuição de curso a colaboradores individuais (`enrollments`), com lista de
+  matrículas e progresso por colaborador.
+- Player do aluno (`src/app/painel/meus-cursos/[courseId]`): sidebar com módulos e
+  aulas (bloqueada/disponível/concluída), vídeo com relato periódico de progresso a
+  cada 5s, texto, download de PDF/arquivo, link externo, atividades/questionário/aula
+  ao vivo com conclusão manual, anotações pessoais (salvas no `localStorage` do
+  navegador — ver limitação), navegação anterior/próxima, retomar do ponto assistido.
+- **Sequência obrigatória validada no servidor** (`src/lib/courses/sequence.ts` +
+  `src/app/painel/meus-cursos/[courseId]/actions.ts`): uma aula só é considerada
+  disponível se todas as aulas obrigatórias anteriores (no módulo atual e em módulos
+  anteriores) estiverem concluídas. O cálculo é refeito no servidor a cada ação
+  (`markLessonComplete`) e ao carregar a página — uma tentativa de acessar
+  `?aula=<id>` de uma aula bloqueada é redirecionada no servidor para a primeira aula
+  disponível, não apenas escondida na UI.
+- Vídeo só é marcado como concluído quando o percentual assistido reportado
+  (`updateVideoProgress`) atinge o mínimo configurado por aula — abrir o vídeo sem
+  assisti-lo não conclui a aula.
+- Progresso do curso (`course_progress`) recalculado a cada aula concluída;
+  `enrollments.status` atualizado para `completed` quando 100% das aulas concluídas.
+- Build, lint e typecheck limpos; verificado no navegador que as rotas do player e
+  de gestão de cursos redirecionam para `/login` sem sessão, sem erro de servidor.
+
+**Limitações desta etapa (documentadas conforme item 12 do escopo original):**
+- Conclusão de vídeo depende do percentual de reprodução relatado pelo próprio
+  navegador ao servidor a cada 5 segundos; não há DRM. Um usuário determinado a
+  manipular requisições de rede ainda pode falsificar esse relato. Mitigado por
+  validar no servidor (nunca no cliente) se o percentual mínimo foi atingido antes
+  de permitir `markLessonComplete`, mas a proteção não é absoluta — consistente com
+  a orientação de documentar limitações quando a proteção total não é possível no
+  navegador.
+- Reordenação de módulos/aulas usa botões subir/descer em vez de arrastar-e-soltar;
+  funcionalmente equivalente, mais simples e mais acessível por teclado.
+- Anotações pessoais são salvas apenas no `localStorage` do navegador (não há tabela
+  de anotações no schema atual) — não sincronizam entre dispositivos.
+- Upload de vídeo/arquivo ainda não está implementado (aulas armazenam uma URL
+  informada manualmente); a arquitetura permanece aberta para trocar por upload real
+  ao Supabase Storage ou um provedor de streaming (Mux/Cloudflare Stream) sem
+  mudança de schema.
 
 ### Etapa 4 — Avaliações ⏳ PENDENTE
 Banco de questões, provas, tentativas, correção manual de discursivas, aprovação.
