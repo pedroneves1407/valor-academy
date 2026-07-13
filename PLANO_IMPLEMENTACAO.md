@@ -212,8 +212,36 @@ conectado (ver pendência da Etapa 1).
   ao Supabase Storage ou um provedor de streaming (Mux/Cloudflare Stream) sem
   mudança de schema.
 
-### Etapa 4 — Avaliações ⏳ PENDENTE
-Banco de questões, provas, tentativas, correção manual de discursivas, aprovação.
+### Etapa 4 — Avaliações ✅ CONCLUÍDA
+- CRUD de avaliações vinculadas a um curso (`src/app/painel/avaliacoes`): tempo
+  limite, nota mínima, tentativas máximas, embaralhar perguntas/alternativas, exibir
+  feedback/gabarito, período de disponibilidade.
+- Banco de questões (`src/app/painel/avaliacoes/[id]`): 5 tipos (múltipla escolha
+  única, verdadeiro/falso, múltiplas respostas, resposta curta, discursiva), pontos
+  por questão, alternativas com marcação de correta.
+- Rota `/painel/avaliacoes` bifurca por perfil no mesmo caminho: administrador vê
+  gestão (criar avaliação/questões/corrigir); colaborador vê as avaliações dos seus
+  cursos atribuídos com tentativas usadas e último resultado.
+- Fluxo de tentativa (`src/app/painel/avaliacoes/[id]/responder`): tela de início
+  mostra tempo limite e tentativas restantes; `startAttempt` valida no servidor (não
+  apenas na UI) que todas as aulas obrigatórias do curso foram concluídas, que a
+  avaliação está dentro do período de disponibilidade e que não excedeu o limite de
+  tentativas, antes de criar a tentativa. Perguntas/alternativas embaralhadas de
+  forma determinística (semente = id da tentativa) para manter a mesma ordem em
+  recarregamentos da página. Cronômetro no cliente envia automaticamente ao zerar.
+- Correção automática de questões objetivas (`submitAttempt`, comparação de
+  alternativas selecionadas vs. corretas); resposta curta e discursiva ficam com
+  status "aguardando correção" até um administrador avaliar
+  (`gradeEssayAnswer`), recalculando a nota final da tentativa quando todas as
+  questões pendentes forem corrigidas.
+- Página de resultado (`resultado/[attemptId]`, aceita `attemptId=latest`) mostra
+  aprovação/reprovação, nota, feedback por questão e gabarito conforme configurado
+  na avaliação.
+- Toda regra de negócio (liberação da prova, limite de tentativas, cálculo de nota,
+  status aguardando correção) é decidida em server actions, nunca confiada ao
+  cliente; RLS reforça o isolamento por empresa.
+- Build, lint e typecheck limpos; verificado no navegador que `/painel/avaliacoes`
+  redireciona para `/login` sem sessão, sem erro de servidor.
 
 ### Etapa 5 — Certificados ⏳ PENDENTE
 Emissão em PDF (pdfkit), QR Code, validação pública (estrutura de página já criada
