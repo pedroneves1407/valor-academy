@@ -133,9 +133,34 @@ JWT (usados pelas políticas RLS via `request.jwt.claims`) é feita por trigger 
 credenciais do usuário) e gerar `src/types/database.ts` a partir do schema real
 (`npx supabase gen types typescript`).
 
-### Etapa 2 — Estrutura organizacional ⏳ PENDENTE
-CRUD de colaboradores, gestores, departamentos, unidades, cargos, equipes, convite
-por e-mail, importação CSV/Excel, ativação/desativação, exportação.
+### Etapa 2 — Estrutura organizacional ✅ CONCLUÍDA
+- CRUD de unidades, departamentos, cargos e equipes (`src/app/painel/{unidades,
+  departamentos,cargos,equipes}`), com componente compartilhado
+  `SimpleEntityManager` (formulário + tabela + exclusão lógica).
+- Colaboradores (`src/app/painel/colaboradores`): tabela com busca, filtros
+  (status/perfil), paginação, seleção em lote (ativar/desativar em massa), edição,
+  ativação/desativação individual.
+- Convite por e-mail via `supabase.auth.admin.inviteUserByEmail` (Supabase Auth cria
+  o usuário e envia o e-mail; o trigger `handle_new_auth_user` cria o profile básico,
+  complementado pelos dados do formulário).
+- Reenvio de convite para usuários com status "convite pendente".
+- Importação por CSV (papaparse): prévia da planilha, validação linha a linha,
+  erro por linha exibido na prévia, modelo de planilha para download, prevenção de
+  duplicidade por e-mail dentro da mesma empresa.
+- Exportação CSV da lista filtrada.
+- Toda mutação passa por `assertOrgPermission`/`requireOrgPermission`
+  (`src/lib/auth/require-company-admin.ts`) — nunca decidida só no cliente — e por
+  RLS no banco (isolamento por `organization_id`).
+- Build, lint e typecheck limpos. Verificado no navegador que `/painel/colaboradores`
+  redireciona para `/login` sem sessão (proteção de rota funcionando); fluxos de
+  dados reais (criar/convidar/importar) ainda não testados ponta a ponta por falta
+  das credenciais do Supabase.
+
+**Nota técnica:** o tipo `Database` (`src/types/database.ts`) ainda é um placeholder
+genérico com `Row/Insert/Update: any` — suficiente para compilar, mas sem
+autocomplete/checagem de campos reais. Deve ser substituído por
+`npx supabase gen types typescript` assim que houver um projeto Supabase real
+conectado (ver pendência da Etapa 1).
 
 ### Etapa 3 — Cursos ⏳ PENDENTE
 Cursos, módulos, aulas, upload de materiais, atribuições, player, progresso,
