@@ -286,9 +286,34 @@ conectado (ver pendência da Etapa 1).
 - Build, lint e typecheck limpos; verificado no navegador que as rotas redirecionam
   para `/login` sem sessão, sem erro de servidor.
 
-### Etapa 7 — Dashboards e relatórios ⏳ PENDENTE
-Dashboards reais por perfil (colaborador, gestor, admin, superadmin), filtros,
-exportações CSV/Excel.
+### Etapa 7 — Dashboards e relatórios ✅ CONCLUÍDA
+- `/painel` agora bifurca por perfil (`src/app/painel/page.tsx`) para 4 dashboards
+  com dados reais do banco (sem números fixos):
+  - **Colaborador** (`collaborator-dashboard.tsx`): cursos em andamento/concluídos,
+    horas estudadas (somadas a partir de aulas concluídas), certificados, média nas
+    avaliações, treinamentos obrigatórios pendentes, metas em andamento, próxima
+    atividade, gráfico de horas estudadas por mês e de desempenho nas avaliações.
+  - **Gestor** (`manager-dashboard.tsx`): nº de colaboradores, treinamentos
+    pendentes/atrasados, cursos concluídos, taxa de conclusão, média nas avaliações,
+    colaboradores em risco, metas atrasadas, PDI pendentes, gráfico de progresso
+    médio por colaborador da equipe.
+  - **Administrador** (`admin-dashboard.tsx`): colaboradores ativos, cursos
+    publicados, taxa de conclusão geral, certificados emitidos, avaliações
+    aguardando correção, metas atrasadas, PDI pendentes, gráfico de certificados
+    emitidos por mês.
+  - **Superadministrador** (`superadmin-dashboard.tsx`): total de empresas,
+    empresas ativas/suspensas, total de usuários, usuários ativos, cursos
+    publicados (globais), gráfico de crescimento mensal de empresas.
+- Relatórios (`/painel/relatorios`): usuários, cursos/matrículas, certificados e
+  metas em abas, com exportação CSV por aba (`papaparse`). Escopo automático por
+  permissão — `report:view_team` (gestor, vê só a própria equipe) ou
+  `report:view_organization` (admin, vê a empresa inteira).
+- Build, lint e typecheck limpos; verificado no navegador que as rotas redirecionam
+  para `/login` sem sessão, sem erro de servidor.
+
+**Nota:** exportação em Excel (.xlsx) nativo não foi implementada — apenas CSV
+(compatível com Excel/Planilhas Google ao abrir). Adicionar `.xlsx` binário é uma
+extensão futura de baixo esforço (biblioteca `xlsx`/`exceljs`) se necessário.
 
 ### Etapa 8 — Comunicação e gamificação ⏳ PENDENTE
 Comunicados, notificações in-app, pontos, conquistas, ranking.
