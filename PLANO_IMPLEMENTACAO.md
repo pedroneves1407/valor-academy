@@ -265,8 +265,26 @@ conectado (ver pendência da Etapa 1).
 - Build, lint e typecheck limpos; verificado no navegador (rota protegida redireciona
   sem sessão; validação pública responde corretamente sem autenticação).
 
-### Etapa 6 — Gestão de pessoas ⏳ PENDENTE
-Metas, PDI, feedback, acompanhamento.
+### Etapa 6 — Gestão de pessoas ✅ CONCLUÍDA
+- Metas (`src/app/painel/metas`): CRUD com os 5 tipos do escopo (numérica,
+  percentual, concluída/não concluída, marco, OKR), responsável, equipe, período,
+  peso, prioridade. Atualização de progresso gera um registro em `goal_updates`
+  (valor anterior, novo valor, comentário, evidência) e recalcula o status da meta
+  automaticamente (não iniciada/em andamento/em risco/atrasada/concluída/cancelada)
+  com base no progresso e no prazo. Colaborador atualiza o progresso das próprias
+  metas; gestor gerencia metas da própria equipe; administrador gerencia todas as
+  metas da empresa — permissões (`goal:manage_own_team`, `goal:manage_all`,
+  `goal:update_own`) sempre checadas no servidor.
+- PDI (`src/app/painel/pdi`): criação pelo gestor (ou admin) para um colaborador,
+  com objetivo profissional, competências atuais/a desenvolver, pontos
+  fortes/melhoria, feedback do gestor e do colaborador. Fluxo de status completo:
+  rascunho → aguardando aceite → ativo → concluído (ou cancelado), com aceite e
+  "solicitar ajustes" pelo colaborador (`dev_plan:respond_own`) e edição/avanço pelo
+  gestor (`dev_plan:manage`). Ações de desenvolvimento vinculáveis a um curso
+  existente, com status próprio (pendente/em andamento/concluída), e reuniões de
+  acompanhamento com data e notas.
+- Build, lint e typecheck limpos; verificado no navegador que as rotas redirecionam
+  para `/login` sem sessão, sem erro de servidor.
 
 ### Etapa 7 — Dashboards e relatórios ⏳ PENDENTE
 Dashboards reais por perfil (colaborador, gestor, admin, superadmin), filtros,
